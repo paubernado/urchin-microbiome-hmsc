@@ -1,0 +1,13 @@
+name: qiime2-2022.11
+channels:
+  - qiime2
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - qiime2=2022.11
+  # Installed automatically as part of the qiime2-2022.11 metapackage:
+  # cutadapt, dada2, mafft, fasttree, feature-classifier (sklearn), etc.
+  # See https://docs.qiime2.org/2022.11/install/ for the official
+  # environment file for your platform (Linux/macOS), which this
+  # file mirrors at the top level.
