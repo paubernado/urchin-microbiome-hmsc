@@ -115,7 +115,9 @@ qiime feature-classifier classify-sklearn \
   --p-read-orientation same
 
 # ---------------------------------------------------------
-# STEP 6: Filter Archaea / Eukaryota / singletons
+# STEP 6: Filter Archaea / Eukaryota / chloroplast / mitochondria / singletons
+# Methods text: "ASVs assigned to Archaea, Eukaryota, chloroplasts,
+# mitochondria, singletons, or rare features were removed."
 # ---------------------------------------------------------
 qiime taxa filter-table \
   --i-table table-dada2.qza \
@@ -131,8 +133,15 @@ qiime taxa filter-table \
   --p-mode contains \
   --o-filtered-table table-dada2-noAr-noEu.qza
 
-qiime feature-table filter-features \
+qiime taxa filter-table \
   --i-table table-dada2-noAr-noEu.qza \
+  --i-taxonomy taxonomy.qza \
+  --p-exclude chloroplast,mitochondria \
+  --p-mode contains \
+  --o-filtered-table table-dada2-noAr-noEu-noOrg.qza
+
+qiime feature-table filter-features \
+  --i-table table-dada2-noAr-noEu-noOrg.qza \
   --p-min-frequency 2 \
   --o-filtered-table table-clean.qza
 
