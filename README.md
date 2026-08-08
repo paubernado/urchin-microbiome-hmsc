@@ -152,4 +152,4 @@ be added here.
 
 ## License
 
-[Choose a license, e.g. MIT / CC-BY-4.0]
+This project is licensed under the MIT License — see LICENSE for details.
