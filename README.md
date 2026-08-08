@@ -9,12 +9,13 @@ reads to joint species distribution models (HMSC) and manuscript figures.
 
 ![Pipeline overview](docs/pipeline_overview.svg)
 
-The diagram above shows the four main stages of the pipeline (QIIME2 →
-R/phyloseq → HMSC models with phylogeny + matching null models → figures).
-The repository also includes a no-phylogeny variant of the HMSC models
-(`R/03_hmsc_models_no_phylogeny.R`), omitted from the diagram for clarity —
-see [Repository structure](#repository-structure) and
-[`METHODS.md`](METHODS.md) for the full picture.
+The diagram above shows the pipeline as reported in the manuscript (QIIME2
+→ R/phyloseq → HMSC models with phylogeny + matching null models →
+figures). The repository also includes a no-phylogeny variant of the HMSC
+models (`R/03_hmsc_models_no_phylogeny.R`), kept for reference only — it
+is **not** part of the manuscript. See
+[Repository structure](#repository-structure) and
+[`METHODS.md`](METHODS.md) for details.
 
 ## Repository structure
 
