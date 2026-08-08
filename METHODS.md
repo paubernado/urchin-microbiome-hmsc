@@ -38,7 +38,12 @@ Primers removed by cutadapt (16S V3-V4, 341F/805R):
 
 | Methods sentence | Parameter | Value | Location |
 |---|---|---|---|
-| Classifier | SILVA 138, 99% OTUs, pre-trained naive Bayes | `silva-138-99-nb-classifier.qza` | `pipeline/01_qiime2_asv_pipeline.sh`, STEP 5 |
+| Classifier | SILVA 138.1, 99% OTUs, pre-trained naive Bayes | `silva-138-99-nb-classifier.qza` | `pipeline/01_qiime2_asv_pipeline.sh`, STEP 5 |
+
+Note: QIIME2's data-resources page names this classifier file
+`silva-138-99-nb-classifier.qza` (dropping the point release), but the
+underlying reference database is **SILVA v138.1** — use "SILVA v138.1" in
+the manuscript text, matching the actual release, not the QIIME2 filename.
 | Confidence threshold | `--p-confidence` | `0.7` | `pipeline/01_qiime2_asv_pipeline.sh`, STEP 5 |
 | Read orientation | `--p-read-orientation` | `same` | `pipeline/01_qiime2_asv_pipeline.sh`, STEP 5 |
 
@@ -48,7 +53,8 @@ Primers removed by cutadapt (16S V3-V4, 341F/805R):
 |---|---|---|---|
 | Archaea excluded | `--p-exclude Archaea` | — | `pipeline/01_qiime2_asv_pipeline.sh`, STEP 6 |
 | Eukaryota excluded | `--p-exclude Eukaryota` | — | `pipeline/01_qiime2_asv_pipeline.sh`, STEP 6 |
-| Singleton features removed | `--p-min-frequency` | `2` | `pipeline/01_qiime2_asv_pipeline.sh`, STEP 6 |
+| Chloroplast and mitochondria excluded | `--p-exclude chloroplast,mitochondria` | — | `pipeline/01_qiime2_asv_pipeline.sh`, STEP 6 |
+| Singleton / rare features removed | `--p-min-frequency` | `2` | `pipeline/01_qiime2_asv_pipeline.sh`, STEP 6 |
 | Decontam (prevalence method, negative controls) | `isContaminant(method = "prevalence", threshold = 0.2)` | `0.2` | `R/01_import_decontam.R` |
 | Sample-type filter + explicit re-exclusion of negative controls | `subset_samples(Species %in% keep_types & (is.na(is.neg) \| is.neg == FALSE))` | — | `R/01_import_decontam.R` |
 
@@ -105,6 +111,36 @@ reported in the manuscript; `R/03`, `R/04`, and `R/05` all use `nfolds = 4`).
 | Variance partitioning | `R/figures/fig_variance_partitioning.R` | `figures/FIGURE_VP_both_models.{pdf,png}` |
 | Seasonal deviations | `R/figures/fig_seasonal_deviations.R` | `figures/FIGURE_seasonal_deviations_FINAL.{pdf,png}` |
 | Host-specific contrasts | `R/figures/fig_host_contrasts.R` | `figures/FIGURE_block4_ABUNDANCE.{pdf,png}`, `figures/FIGURE_block4_PA.{pdf,png}` |
+
+## 9. Software versions and package citations
+
+| Software | Version | Where used |
+|---|---|---|
+| QIIME2 | 2022.11 | `pipeline/01_qiime2_asv_pipeline.sh`, `environment.yml` |
+| R | 4.5 | all `R/*.R` scripts |
+
+| Package | Citation | Where used |
+|---|---|---|
+| phyloseq | McMurdie & Holmes (2013) | `R/01_import_decontam.R` |
+| decontam | Davis et al. (2018) | `R/01_import_decontam.R` |
+| microbiome | Lahti & Shetty (2017) | `R/02_genus_aggregation.R` |
+| Hmsc | Ovaskainen et al. (2017) | `R/03`, `R/04`, `R/05` |
+| coda | Plummer et al. (2006) | convergence diagnostics in `R/03`, `R/04`, `R/05` |
+
+## 10. Open questions from the current Methods draft
+
+The Section 2.3/2.4 draft pasted into this repo's history (2026-08-08)
+describes only the two **phylogeny-informed** models (presence/absence and
+conditional abundance) and does not mention:
+- the **no-phylogeny** variants (`R/03_hmsc_models_no_phylogeny.R`), or
+- the **null models** / model-vs-null comparison (`R/05_null_models.R`).
+
+Both are still implemented in the repo (see sections 6–7 above) in case
+they end up in a supplementary comparison, but if the manuscript's final
+Methods only reports the two phylogeny models, consider noting explicitly
+whether `R/03` and `R/05` are supplementary/exploratory rather than part of
+the main analysis, so a future reader of the repo isn't left guessing which
+results are actually reported in the paper.
 
 ---
 
