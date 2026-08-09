@@ -39,13 +39,14 @@ Primers removed by cutadapt (16S V3-V4, 341F/805R):
 | Methods sentence | Parameter | Value | Location |
 |---|---|---|---|
 | Classifier | SILVA 138.1, 99% OTUs, pre-trained naive Bayes | `silva-138-99-nb-classifier.qza` | `pipeline/01_qiime2_asv_pipeline.sh`, STEP 5 |
-
-Note: QIIME2's data-resources page names this classifier file
-`silva-138-99-nb-classifier.qza` (dropping the point release), but the
-underlying reference database is **SILVA v138.1** — use "SILVA v138.1" in
-the manuscript text, matching the actual release, not the QIIME2 filename.
 | Confidence threshold | `--p-confidence` | `0.7` | `pipeline/01_qiime2_asv_pipeline.sh`, STEP 5 |
 | Read orientation | `--p-read-orientation` | `same` | `pipeline/01_qiime2_asv_pipeline.sh`, STEP 5 |
+
+> **Note:** QIIME2's data-resources page names this classifier file
+> `silva-138-99-nb-classifier.qza` (dropping the point release), but the
+> underlying reference database is **SILVA v138.1** — use "SILVA v138.1"
+> in the manuscript text, matching the actual release, not the QIIME2
+> filename.
 
 ## 4. Filtering
 
@@ -143,5 +144,3 @@ reported in the manuscript; `R/03`, `R/04`, and `R/05` all use `nfolds = 4`).
 Methods section changes, grep for it in `pipeline/` and `R/` before editing
 prose — if the value only lives in this file's memory and not in the code,
 the pipeline is not actually reproducing what the paper claims.
-
-How to keep this file honest: whenever a number in the manuscript's Methods section changes, grep for it in pipeline/ and R/ before editing prose — if the value only lives in this file's memory and not in the code, the pipeline is not actually reproducing what the paper claims.
