@@ -140,7 +140,4 @@ reported in the manuscript; `R/03`, `R/04`, and `R/05` all use `nfolds = 4`).
 
 ---
 
-**How to keep this file honest:** whenever a number in the manuscript's
-Methods section changes, grep for it in `pipeline/` and `R/` before editing
-prose — if the value only lives in this file's memory and not in the code,
-the pipeline is not actually reproducing what the paper claims.
+
