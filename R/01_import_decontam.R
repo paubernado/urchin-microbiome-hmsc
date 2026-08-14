@@ -17,11 +17,7 @@ results_dir <- "results"
 dir.create(results_dir, showWarnings = FALSE)
 
 # ---------------------------------------------------------
-# INPUT FILE PATHS — edit these if your filenames differ.
-# These are simply whatever names came out of the QIIME2
-# export step (pipeline/01_qiime2_asv_pipeline.sh); there is
-# no fixed naming convention, so update these 4 lines rather
-# than hunting for filenames elsewhere in the script.
+# INPUT FILE PATHS -- edit these if your filenames differ.
 # ---------------------------------------------------------
 biom_file     <- "data/Phyloseq/table-with-taxonomy.biom"
 tree_file     <- "data/Phyloseq/tree.nwk"
@@ -51,28 +47,33 @@ phylo_raw <- merge_phyloseq(phylo_raw, refseq(rep_seqs))
 
 cat("Initial samples:", nsamples(phylo_raw), "\n")
 cat("Initial taxa:", ntaxa(phylo_raw), "\n")
+# Expected: 187 samples (184 biological/field samples + 3 negative
+# controls: NCEXT, NCPR, Control), now that metadata_pbr2.tsv
+# includes all 3 control rows.
 
 # ---------------------------------------------------------
 # Decontam (prevalence method)
 # ---------------------------------------------------------
-sample_data(phylo_raw)$is.neg <- sample_data(phylo_raw)$Species %in% c(
+sample_data(phylo_raw)$is.neg <- sample_data(phylo_raw)$HostType %in% c(
   "Extraccion control", "PCR control", "Control"
 )
 
-table(sample_data(phylo_raw)$is.neg, useNA = "ifany")
+cat("\nNegative control flag counts:\n")
+print(table(sample_data(phylo_raw)$is.neg, useNA = "ifany"))
+# Expected: FALSE 184, TRUE 3
 
 contamdf.prev <- isContaminant(
   phylo_raw, method = "prevalence", neg = "is.neg", threshold = 0.2
 )
 
-cat("Contaminants detected:\n")
+cat("\nContaminants detected:\n")
 print(table(contamdf.prev$contaminant))
 
 # Presence/absence plot for prevalence diagnostics
 ps.pa <- transform_sample_counts(phylo_raw, function(abund) 1 * (abund > 0))
 neg_labels <- c("Extraccion control", "PCR control", "Control")
-ps.pa.neg <- prune_samples(sample_data(phylo_raw)$Species %in% neg_labels, ps.pa)
-ps.pa.pos <- prune_samples(!(sample_data(phylo_raw)$Species %in% neg_labels), ps.pa)
+ps.pa.neg <- prune_samples(sample_data(phylo_raw)$HostType %in% neg_labels, ps.pa)
+ps.pa.pos <- prune_samples(!(sample_data(phylo_raw)$HostType %in% neg_labels), ps.pa)
 
 df.pa <- data.frame(
   pa.pos = taxa_sums(ps.pa.pos),
@@ -85,14 +86,30 @@ p_decontam <- ggplot(df.pa, aes(x = pa.neg, y = pa.pos, color = contaminant)) +
   xlab("Prevalence in negative controls") +
   ylab("Prevalence in true samples")
 print(p_decontam)
+ggsave(file.path(results_dir, "decontam_prevalence_diagnostic.png"), p_decontam,
+       width = 6, height = 5, dpi = 300)
 
 phylo_raw <- prune_taxa(!contamdf.prev$contaminant, phylo_raw)
 
-cat("Samples after decontam:", nsamples(phylo_raw), "\n")
+cat("\nSamples after decontam:", nsamples(phylo_raw), "\n")
 cat("Taxa after decontam:", ntaxa(phylo_raw), "\n")
 
 # ---------------------------------------------------------
-# Taxonomy cleanup
+# Report real sequencing depth of the 3 negative controls
+# (QC / methods reporting only -- not used downstream, since
+# these samples are excluded from psJ below)
+# ---------------------------------------------------------
+control_ids <- c("NCEXT", "NCPR", "Control")
+control_ids_present <- intersect(control_ids, sample_names(phylo_raw))
+if (length(control_ids_present) > 0) {
+  depths <- sample_sums(phylo_raw)[control_ids_present]
+  cat("\nNegative control read depths (post-decontam):\n")
+  print(depths)
+}
+
+# ---------------------------------------------------------
+# Taxonomy cleanup (runs ONCE, after decontam, directly on
+# phylo_raw -- no separate "ps_raw" copy)
 # ---------------------------------------------------------
 tax_raw <- as.data.frame(tax_table(phylo_raw), stringsAsFactors = FALSE)
 
@@ -107,7 +124,7 @@ tax_raw[] <- lapply(tax_raw, function(x) {
 colnames(tax_raw)[colnames(tax_raw) == "Kingdom"] <- "Domain"
 tax_table(phylo_raw) <- as.matrix(tax_raw)
 
-cat("Taxonomy cleaned.\n")
+cat("\nTaxonomy cleaned.\n")
 
 # ---------------------------------------------------------
 # Filter to samples of interest
@@ -115,21 +132,17 @@ cat("Taxonomy cleaned.\n")
 ps0 <- phylo_raw
 keep_types <- c("Arbacia lixula", "Paracentrotus lividus", "Water sample")
 
-# NOTE: at this point the phyloseq sample_data still uses the raw
-# metadata column "Species" (not the "HostType" factor, which is
-# only created later when building XData in
-# R/02_genus_aggregation.R). Negative controls are excluded again
-# here explicitly (on top of the decontam taxa removal above) as a
-# belt-and-braces check, matching the confirmed production script.
+# Negative controls are excluded again here explicitly (on top of
+# the decontam taxa removal above) as a belt-and-braces check.
 psJ <- subset_samples(
   ps0,
-  Species %in% keep_types & (is.na(is.neg) | is.neg == FALSE)
+  HostType %in% keep_types & (is.na(is.neg) | is.neg == FALSE)
 )
 psJ <- prune_taxa(taxa_sums(psJ) > 0, psJ)
 
-cat("Samples after keeping target sample types:", nsamples(psJ), "\n")
+cat("\nSamples after keeping target sample types:", nsamples(psJ), "\n")
 cat("Taxa after keeping target sample types:", ntaxa(psJ), "\n")
-print(table(sample_data(psJ)$Species, useNA = "ifany"))
+print(table(sample_data(psJ)$HostType, useNA = "ifany"))
 
 # ---------------------------------------------------------
 # Match tree tips with taxonomy-assigned ASVs
@@ -138,7 +151,7 @@ tree_asv <- read.tree(tree_file)
 tax0 <- as.data.frame(tax_table(psJ), stringsAsFactors = FALSE)
 
 common_asv <- intersect(tree_asv$tip.label, rownames(tax0))
-cat("ASVs shared between tree and taxonomy:", length(common_asv), "\n")
+cat("\nASVs shared between tree and taxonomy:", length(common_asv), "\n")
 
 if (length(common_asv) < 100) {
   stop("Too few matching ASVs between tree and taxonomy.")
@@ -161,11 +174,6 @@ cat("Tree tips after keeping assigned genera:", Ntip(tree_asv_genus), "\n")
 
 # ---------------------------------------------------------
 # Genus phylogenetic cohesion diagnostic
-# For each genus, compares mean within-genus tip-to-tip
-# distance vs. mean between-genus distance. A ratio << 1
-# indicates the genus is phylogenetically cohesive on the ASV
-# tree (a prerequisite for collapsing ASVs to genus level and
-# building a genus-level tree in R/02_genus_aggregation.R).
 # ---------------------------------------------------------
 genus_phylo_check <- function(tree, genus_vec) {
   d <- cophenetic(tree)
@@ -228,6 +236,9 @@ saveRDS(phylo_raw, file.path(results_dir, "phylo_raw.rds"))
 saveRDS(psJ, file.path(results_dir, "psJ.rds"))
 saveRDS(psJ_genus, file.path(results_dir, "psJ_genus.rds"))
 saveRDS(tree_asv_genus, file.path(results_dir, "tree_asv_genus.rds"))
+
+cat("\nBlock 2-4 (import, decontam, taxonomy cleanup, filtering,",
+    "phylogenetic cohesion check) complete.\n")
 
 cat("\nBlock 2-4 (import, decontam, taxonomy cleanup, filtering,",
     "phylogenetic cohesion check) complete.\n")
