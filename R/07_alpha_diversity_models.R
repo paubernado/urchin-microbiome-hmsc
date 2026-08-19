@@ -45,6 +45,17 @@ phylo_raw <- readRDS(file.path(results_dir, "phylo_raw.rds"))
 
 stopifnot(all(c("HostType", "Site") %in% colnames(sample_data(phylo_raw))))
 
+# IMPORTANT: phylo_raw still contains the 3 negative controls
+# (NCEXT, NCPR, "Control"), since decontam only removes contaminant
+# TAXA, not the control SAMPLES themselves. Analyses here are
+# restricted to the three sample types of interest; without this
+# filter, the controls appear as a spurious 4th "NA" group in
+# downstream plots (their HostType doesn't match any factor level
+# used for grouping).
+keep_types <- c("Water sample", "Arbacia lixula", "Paracentrotus lividus")
+phylo_raw <- subset_samples(phylo_raw, HostType %in% keep_types)
+phylo_raw <- prune_taxa(taxa_sums(phylo_raw) > 0, phylo_raw)
+
 season_levels <- c("Spring", "Summer", "Autumn", "Winter")
 host_levels <- c("Water sample", "Arbacia lixula", "Paracentrotus lividus")
 
