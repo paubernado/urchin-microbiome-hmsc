@@ -1,145 +1,276 @@
-<svg viewBox="0 0 1700 620" xmlns="http://www.w3.org/2000/svg" font-family="'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<svg viewBox="0 0 1700 720" xmlns="http://www.w3.org/2000/svg" font-family="'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif">
 
   <style>
-    .stage-num    { font-size: 20px; font-weight: 800; fill: #ffffff; }
-    .stage-title  { font-size: 21px; font-weight: 800; fill: #0f172a; letter-spacing: -0.01em; }
-    .stage-sub    { font-size: 13px; fill: #94a3b8; font-family: 'SF Mono', 'Menlo', monospace; }
-    .bullet-text  { font-size: 15px; font-weight: 500; fill: #334155; }
-    .bullet-sub   { font-size: 12.5px; fill: #94a3b8; }
+    .overline     { font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; }
+    .stage-num    { font-size: 18px; font-weight: 800; fill: #ffffff; }
+    .stage-title  { font-size: 20px; font-weight: 800; fill: #0f172a; letter-spacing: -0.01em; }
+    .file-badge   { font-size: 10.5px; font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; }
+    .bullet-text  { font-size: 14.5px; font-weight: 600; fill: #1e293b; }
+    .bullet-sub   { font-size: 11.5px; font-weight: 400; fill: #64748b; }
+    .header-title { font-size: 27px; font-weight: 800; fill: #0f172a; letter-spacing: -0.02em; }
+    .header-sub   { font-size: 14px; font-weight: 400; fill: #64748b; }
+    .footer-text  { font-size: 12px; fill: #94a3b8; }
+    .stat-num     { font-size: 17px; font-weight: 800; fill: #0f172a; }
+    .stat-label   { font-size: 9.5px; font-weight: 600; fill: #94a3b8; letter-spacing: 0.04em; }
   </style>
 
   <defs>
-    <marker id="tip" markerWidth="12" markerHeight="12" refX="8" refY="4" orient="auto">
-      <path d="M0,0 L8,4 L0,8 Z" fill="#cbd5e1"/>
-    </marker>
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.07"/>
+    </filter>
+    <filter id="numShadow" x="-60%" y="-60%" width="220%" height="220%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.3"/>
+    </filter>
+    <filter id="arrowShadow" x="-60%" y="-60%" width="220%" height="220%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.18"/>
+    </filter>
+
+    <radialGradient id="gradIndigo" cx="35%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#5b56e0"/>
+    </radialGradient>
+    <radialGradient id="gradSky" cx="35%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </radialGradient>
+    <radialGradient id="gradPink" cx="35%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </radialGradient>
+    <radialGradient id="gradGreen" cx="35%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </radialGradient>
+
+    <pattern id="dotgrid" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="1.2" cy="1.2" r="1.2" fill="#eef1f6"/>
+    </pattern>
   </defs>
 
-  <rect x="0" y="0" width="1700" height="620" fill="#ffffff"/>
-
-  <!-- Header -->
-  <text x="50" y="50" font-size="28" font-weight="800" fill="#0f172a" letter-spacing="-0.02em">Pipeline overview</text>
-  <text x="50" y="76" font-size="15" fill="#64748b">Coelomic fluid microbiome of Arbacia lixula &amp; Paracentrotus lividus</text>
+  <!-- Canvas -->
+  <rect x="0" y="0" width="1700" height="720" fill="#ffffff"/>
+  <rect x="0" y="0" width="1700" height="720" fill="url(#dotgrid)" opacity="0.5"/>
 
   <!-- ============================================================ -->
-  <!-- STAGE 1 -->
+  <!-- HEADER -->
   <!-- ============================================================ -->
-  <rect x="50" y="120" width="370" height="440" rx="18" fill="#f5f5ff" stroke="#e0e0fb" stroke-width="1.5"/>
-  <circle cx="90" cy="160" r="22" fill="#6366f1"/>
-  <text x="90" y="167" text-anchor="middle" class="stage-num">1</text>
-  <text x="124" y="167" class="stage-title">QIIME2</text>
-  <text x="124" y="188" class="stage-sub">01_qiime2_asv_pipeline.sh</text>
+  <text x="50" y="48" class="header-title">Pipeline overview</text>
+  <text x="50" y="72" class="header-sub">Coelomic fluid microbiome of <tspan font-style="italic">Arbacia lixula</tspan> &amp; <tspan font-style="italic">Paracentrotus lividus</tspan></text>
 
   <g>
-    <circle cx="90" cy="235" r="5" fill="#6366f1"/>
-    <text x="112" y="240" class="bullet-text">Raw reads → manifest</text>
-
-    <circle cx="90" cy="280" r="5" fill="#6366f1"/>
-    <text x="112" y="285" class="bullet-text">Trim primers (Cutadapt)</text>
-    <text x="112" y="303" class="bullet-sub">0 mismatches</text>
-
-    <circle cx="90" cy="345" r="5" fill="#6366f1"/>
-    <text x="112" y="350" class="bullet-text">Denoise (DADA2)</text>
-    <text x="112" y="368" class="bullet-sub">trunc 250F / 240R → ASVs</text>
-
-    <circle cx="90" cy="410" r="5" fill="#6366f1"/>
-    <text x="112" y="415" class="bullet-text">Phylogeny</text>
-    <text x="112" y="433" class="bullet-sub">MAFFT → mask → FastTree → root</text>
-
-    <circle cx="90" cy="475" r="5" fill="#6366f1"/>
-    <text x="112" y="480" class="bullet-text">Classify taxonomy</text>
-    <text x="112" y="498" class="bullet-sub">SILVA 138, confidence 0.7</text>
-
-    <circle cx="90" cy="530" r="5" fill="#6366f1"/>
-    <text x="112" y="535" class="bullet-text">Export → Phyloseq/</text>
+    <text x="1290" y="42" text-anchor="middle" class="stat-num">4</text>
+    <text x="1290" y="56" text-anchor="middle" class="stat-label">STAGES</text>
+    <line x1="1335" y1="26" x2="1335" y2="58" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="1390" y="42" text-anchor="middle" class="stat-num">7</text>
+    <text x="1390" y="56" text-anchor="middle" class="stat-label">R SCRIPTS</text>
+    <line x1="1445" y1="26" x2="1445" y2="58" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="1510" y="42" text-anchor="middle" class="stat-num">8</text>
+    <text x="1510" y="56" text-anchor="middle" class="stat-label">MCMC CHAINS</text>
+    <line x1="1575" y1="26" x2="1575" y2="58" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="1618" y="42" text-anchor="middle" class="stat-num">4</text>
+    <text x="1618" y="56" text-anchor="middle" class="stat-label">CV FOLDS</text>
   </g>
 
-  <line x1="420" y1="340" x2="470" y2="340" stroke="#cbd5e1" stroke-width="3" marker-end="url(#tip)"/>
+  <line x1="50" y1="90" x2="1650" y2="90" stroke="#e2e8f0" stroke-width="1"/>
 
   <!-- ============================================================ -->
-  <!-- STAGE 2 -->
+  <!-- STAGE 1 — QIIME2 -->
   <!-- ============================================================ -->
-  <rect x="480" y="120" width="370" height="440" rx="18" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5"/>
-  <circle cx="520" cy="160" r="22" fill="#0ea5e9"/>
-  <text x="520" y="167" text-anchor="middle" class="stage-num">2</text>
-  <text x="554" y="167" class="stage-title">R / phyloseq</text>
-  <text x="554" y="188" class="stage-sub">01_import_decontam.R</text>
-  <text x="554" y="204" class="stage-sub">02_genus_aggregation.R</text>
+  <g filter="url(#cardShadow)">
+    <rect x="50" y="122" width="370" height="520" rx="16" fill="#ffffff" stroke="#e0e7ff" stroke-width="1.5"/>
+  </g>
+  <path d="M50,138 a16,16 0 0 1 16,-16 h338 a16,16 0 0 1 16,16 v48 h-370 z" fill="#eef2ff"/>
+
+  <text x="88" y="146" class="overline" fill="#6366f1">STAGE 01</text>
+  <circle cx="88" cy="169" r="20" fill="url(#gradIndigo)" filter="url(#numShadow)"/>
+  <text x="88" y="175" text-anchor="middle" class="stage-num">1</text>
+  <text x="122" y="175" class="stage-title">QIIME2</text>
+  <g transform="translate(370,158)" stroke="#818cf8" stroke-width="2" fill="none" stroke-linecap="round">
+    <path d="M0,0 C6,6 6,10 0,16 M10,0 C4,6 4,10 10,16"/>
+    <line x1="1" y1="3" x2="9" y2="3"/>
+    <line x1="1" y1="8" x2="9" y2="8"/>
+    <line x1="1" y1="13" x2="9" y2="13"/>
+  </g>
+
+  <line x1="70" y1="192" x2="400" y2="192" stroke="#e0e7ff" stroke-width="1"/>
+  <rect x="122" y="204" width="176" height="19" rx="9.5" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1"/>
+  <text x="132" y="217" class="file-badge" fill="#4f46e5">01_qiime2_asv_pipeline.sh</text>
 
   <g>
-    <circle cx="520" cy="255" r="5" fill="#0ea5e9"/>
-    <text x="542" y="260" class="bullet-text">Remove contaminants</text>
-    <text x="542" y="278" class="bullet-sub">decontam, prevalence 0.2</text>
+    <circle cx="88" cy="266" r="4" fill="#ffffff" stroke="#6366f1" stroke-width="2.5"/>
+    <line x1="88" y1="272" x2="88" y2="341" stroke="#c7d2fe" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="110" y="271" class="bullet-text">Raw reads → manifest</text>
 
-    <circle cx="520" cy="325" r="5" fill="#0ea5e9"/>
-    <text x="542" y="330" class="bullet-text">Aggregate to genus</text>
-    <text x="542" y="348" class="bullet-sub">detection ≥5, prevalence ≥0.15</text>
+    <circle cx="88" cy="347" r="4" fill="#ffffff" stroke="#6366f1" stroke-width="2.5"/>
+    <line x1="88" y1="353" x2="88" y2="422" stroke="#c7d2fe" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="110" y="352" class="bullet-text">Trim primers (Cutadapt)</text>
+    <text x="110" y="370" class="bullet-sub">0 mismatches</text>
 
-    <circle cx="520" cy="395" r="5" fill="#0ea5e9"/>
-    <text x="542" y="400" class="bullet-text">Build covariates (X)</text>
-    <text x="542" y="418" class="bullet-sub">HostType, Season, Site, logDepth_z</text>
+    <circle cx="88" cy="428" r="4" fill="#ffffff" stroke="#6366f1" stroke-width="2.5"/>
+    <line x1="88" y1="434" x2="88" y2="503" stroke="#c7d2fe" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="110" y="433" class="bullet-text">Denoise (DADA2)</text>
+    <text x="110" y="451" class="bullet-sub">trunc 250F / 240R → ASVs</text>
 
-    <circle cx="520" cy="465" r="5" fill="#0ea5e9"/>
-    <text x="542" y="470" class="bullet-text">Genus-level tree</text>
-    <text x="542" y="488" class="bullet-sub">neighbor-joining collapse</text>
+    <circle cx="88" cy="509" r="4" fill="#ffffff" stroke="#6366f1" stroke-width="2.5"/>
+    <line x1="88" y1="515" x2="88" y2="579" stroke="#c7d2fe" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="110" y="514" class="bullet-text">Phylogeny</text>
+    <text x="110" y="532" class="bullet-sub">MAFFT → mask → FastTree → root</text>
+
+    <circle cx="88" cy="585" r="4" fill="#6366f1"/>
+    <text x="110" y="590" class="bullet-text">Classify + export</text>
+    <text x="110" y="608" class="bullet-sub">SILVA 138.1 (conf. 0.7) → Phyloseq/</text>
   </g>
 
-  <line x1="850" y1="340" x2="900" y2="340" stroke="#cbd5e1" stroke-width="3" marker-end="url(#tip)"/>
+  <path d="M420,362 L458,362 L458,354 L472,368 L458,382 L458,374 L420,374 Z" fill="#cbd5e1" filter="url(#arrowShadow)"/>
 
   <!-- ============================================================ -->
-  <!-- STAGE 3 -->
+  <!-- STAGE 2 — R / phyloseq -->
   <!-- ============================================================ -->
-  <rect x="910" y="120" width="400" height="440" rx="18" fill="#fdf2f8" stroke="#fbcfe8" stroke-width="1.5"/>
-  <circle cx="950" cy="160" r="22" fill="#ec4899"/>
-  <text x="950" y="167" text-anchor="middle" class="stage-num">3</text>
-  <text x="984" y="167" class="stage-title">HMSC models</text>
-  <text x="984" y="188" class="stage-sub">04_hmsc_models_with_phylogeny.R</text>
-  <text x="984" y="204" class="stage-sub">05_null_models.R</text>
+  <g filter="url(#cardShadow)">
+    <rect x="480" y="122" width="370" height="520" rx="16" fill="#ffffff" stroke="#bae6fd" stroke-width="1.5"/>
+  </g>
+  <path d="M480,138 a16,16 0 0 1 16,-16 h338 a16,16 0 0 1 16,16 v48 h-370 z" fill="#f0f9ff"/>
+
+  <text x="518" y="146" class="overline" fill="#0ea5e9">STAGE 02</text>
+  <circle cx="518" cy="169" r="20" fill="url(#gradSky)" filter="url(#numShadow)"/>
+  <text x="518" y="175" text-anchor="middle" class="stage-num">2</text>
+  <text x="552" y="175" class="stage-title">R / phyloseq</text>
+  <g transform="translate(800,157)" stroke="#38bdf8" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0,0 H16 L10,8 V16 L6,14 V8 Z"/>
+  </g>
+
+  <line x1="500" y1="192" x2="830" y2="192" stroke="#bae6fd" stroke-width="1"/>
+  <rect x="552" y="204" width="168" height="19" rx="9.5" fill="#e0f2fe" stroke="#bae6fd" stroke-width="1"/>
+  <text x="560" y="217" class="file-badge" fill="#0369a1">01_import_decontam.R</text>
 
   <g>
-    <circle cx="950" cy="255" r="5" fill="#ec4899"/>
-    <text x="972" y="260" class="bullet-text">Presence/Absence model</text>
-    <text x="972" y="278" class="bullet-sub">probit, phylogeny, 8 chains</text>
+    <circle cx="518" cy="266" r="4" fill="#ffffff" stroke="#0ea5e9" stroke-width="2.5"/>
+    <line x1="518" y1="272" x2="518" y2="341" stroke="#bae6fd" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="540" y="271" class="bullet-text">Remove contaminants</text>
+    <text x="540" y="289" class="bullet-sub">decontam, prevalence 0.2</text>
 
-    <circle cx="950" cy="320" r="5" fill="#ec4899"/>
-    <text x="972" y="325" class="bullet-text">Abundance model</text>
-    <text x="972" y="343" class="bullet-sub">normal log1p, phylogeny, 8 chains</text>
+    <circle cx="518" cy="347" r="4" fill="#ffffff" stroke="#0ea5e9" stroke-width="2.5"/>
+    <line x1="518" y1="353" x2="518" y2="422" stroke="#bae6fd" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="540" y="352" class="bullet-text">Aggregate to genus</text>
+    <text x="540" y="370" class="bullet-sub">detection ≥5, prevalence ≥0.15</text>
 
-    <circle cx="950" cy="385" r="5" fill="#f59e0b"/>
-    <text x="972" y="390" class="bullet-text" fill="#92400e">+ matching null models</text>
-    <text x="972" y="408" class="bullet-sub">intercept-only</text>
+    <circle cx="518" cy="428" r="4" fill="#ffffff" stroke="#0ea5e9" stroke-width="2.5"/>
+    <line x1="518" y1="434" x2="518" y2="480" stroke="#bae6fd" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="540" y="433" class="bullet-text">Build covariates (X)</text>
+    <text x="540" y="451" class="bullet-sub">HostType, Season, Site, logDepth_z</text>
 
-    <circle cx="950" cy="450" r="5" fill="#ec4899"/>
-    <text x="972" y="455" class="bullet-text">4-fold CV + variance partitioning</text>
-    <text x="972" y="473" class="bullet-sub">AUC / R² · 6 groups incl. Depth</text>
-
-    <circle cx="950" cy="515" r="5" fill="#ec4899"/>
-    <text x="972" y="520" class="bullet-text">Model vs. null comparison</text>
+    <circle cx="518" cy="486" r="4" fill="#0ea5e9"/>
+    <line x1="518" y1="492" x2="518" y2="530" stroke="#bae6fd" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="540" y="491" class="bullet-text">Genus-level tree</text>
+    <text x="540" y="509" class="bullet-sub">neighbor-joining collapse</text>
   </g>
 
-  <line x1="1310" y1="340" x2="1360" y2="340" stroke="#cbd5e1" stroke-width="3" marker-end="url(#tip)"/>
+  <rect x="500" y="548" width="330" height="38" rx="10" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1"/>
+  <circle cx="521" cy="567" r="3" fill="#0ea5e9"/>
+  <text x="534" y="571" class="file-badge" fill="#0369a1">02_genus_aggregation.R</text>
+
+  <path d="M850,362 L888,362 L888,354 L902,368 L888,382 L888,374 L850,374 Z" fill="#cbd5e1" filter="url(#arrowShadow)"/>
 
   <!-- ============================================================ -->
-  <!-- STAGE 4 -->
+  <!-- STAGE 3 — HMSC models -->
   <!-- ============================================================ -->
-  <rect x="1370" y="120" width="280" height="440" rx="18" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
-  <circle cx="1410" cy="160" r="22" fill="#10b981"/>
-  <text x="1410" y="167" text-anchor="middle" class="stage-num">4</text>
-  <text x="1444" y="167" class="stage-title">Figures</text>
-  <text x="1444" y="188" class="stage-sub">06_figures.R</text>
+  <g filter="url(#cardShadow)">
+    <rect x="910" y="122" width="400" height="520" rx="16" fill="#ffffff" stroke="#fbcfe8" stroke-width="1.5"/>
+  </g>
+  <path d="M910,138 a16,16 0 0 1 16,-16 h368 a16,16 0 0 1 16,16 v48 h-400 z" fill="#fdf2f8"/>
+
+  <text x="948" y="146" class="overline" fill="#ec4899">STAGE 03</text>
+  <circle cx="948" cy="169" r="20" fill="url(#gradPink)" filter="url(#numShadow)"/>
+  <text x="948" y="175" text-anchor="middle" class="stage-num">3</text>
+  <text x="982" y="175" class="stage-title">HMSC models</text>
+  <g transform="translate(1258,157)" stroke="#f472b6" stroke-width="2" fill="none" stroke-linecap="round">
+    <line x1="0" y1="16" x2="16" y2="16"/>
+    <line x1="3" y1="16" x2="3" y2="7"/>
+    <line x1="8" y1="16" x2="8" y2="2"/>
+    <line x1="13" y1="16" x2="13" y2="10"/>
+  </g>
+
+  <line x1="930" y1="192" x2="1290" y2="192" stroke="#fbcfe8" stroke-width="1"/>
+  <rect x="982" y="204" width="238" height="19" rx="9.5" fill="#fce7f3" stroke="#fbcfe8" stroke-width="1"/>
+  <text x="990" y="217" class="file-badge" fill="#be185d">04_hmsc_models_with_phylogeny.R</text>
 
   <g>
-    <circle cx="1410" cy="255" r="5" fill="#10b981"/>
-    <text x="1432" y="260" class="bullet-text">Composition + diversity</text>
+    <circle cx="948" cy="266" r="4" fill="#ffffff" stroke="#ec4899" stroke-width="2.5"/>
+    <line x1="948" y1="272" x2="948" y2="327" stroke="#fbcfe8" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="970" y="271" class="bullet-text">Presence/Absence model</text>
+    <text x="970" y="289" class="bullet-sub">probit, phylogeny, 8 chains</text>
 
-    <circle cx="1410" cy="325" r="5" fill="#10b981"/>
-    <text x="1432" y="330" class="bullet-text">Variance partitioning</text>
+    <circle cx="948" cy="333" r="4" fill="#ffffff" stroke="#ec4899" stroke-width="2.5"/>
+    <line x1="948" y1="339" x2="948" y2="394" stroke="#fbcfe8" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="970" y="338" class="bullet-text">Abundance model</text>
+    <text x="970" y="356" class="bullet-sub">normal log1p, phylogeny, 8 chains</text>
 
-    <circle cx="1410" cy="380" r="5" fill="#10b981"/>
-    <text x="1432" y="385" class="bullet-text">Seasonal deviations</text>
+    <circle cx="948" cy="400" r="4" fill="#ffffff" stroke="#f59e0b" stroke-width="2.5"/>
+    <line x1="948" y1="406" x2="948" y2="455" stroke="#fde68a" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="970" y="405" class="bullet-text" fill="#92400e">+ matching null models</text>
+    <text x="970" y="423" class="bullet-sub">intercept-only</text>
 
-    <circle cx="1410" cy="435" r="5" fill="#10b981"/>
-    <text x="1432" y="440" class="bullet-text">Host contrasts</text>
+    <circle cx="948" cy="461" r="4" fill="#ffffff" stroke="#ec4899" stroke-width="2.5"/>
+    <line x1="948" y1="467" x2="948" y2="522" stroke="#fbcfe8" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="970" y="466" class="bullet-text">4-fold CV + variance partitioning</text>
+    <text x="970" y="484" class="bullet-sub">AUC / R² · 6 groups incl. Depth</text>
+
+    <circle cx="948" cy="528" r="4" fill="#ec4899"/>
+    <text x="970" y="533" class="bullet-text">Model vs. null comparison</text>
   </g>
 
-  <text x="50" y="595" font-size="12.5" fill="#94a3b8">See METHODS.md for the full mapping between manuscript Methods sentences and code.</text>
+  <rect x="930" y="548" width="360" height="38" rx="10" fill="#fdf2f8" stroke="#fbcfe8" stroke-width="1"/>
+  <circle cx="951" cy="567" r="3" fill="#ec4899"/>
+  <text x="964" y="571" class="file-badge" fill="#be185d">05_null_models.R</text>
+
+  <path d="M1310,362 L1348,362 L1348,354 L1362,368 L1348,382 L1348,374 L1310,374 Z" fill="#cbd5e1" filter="url(#arrowShadow)"/>
+
+  <!-- ============================================================ -->
+  <!-- STAGE 4 — Figures -->
+  <!-- ============================================================ -->
+  <g filter="url(#cardShadow)">
+    <rect x="1370" y="122" width="280" height="520" rx="16" fill="#ffffff" stroke="#bbf7d0" stroke-width="1.5"/>
+  </g>
+  <path d="M1370,138 a16,16 0 0 1 16,-16 h248 a16,16 0 0 1 16,16 v48 h-280 z" fill="#f0fdf4"/>
+
+  <text x="1408" y="146" class="overline" fill="#10b981">STAGE 04</text>
+  <circle cx="1408" cy="169" r="20" fill="url(#gradGreen)" filter="url(#numShadow)"/>
+  <text x="1408" y="175" text-anchor="middle" class="stage-num">4</text>
+  <text x="1442" y="175" class="stage-title">Figures</text>
+  <g transform="translate(1588,157)" stroke="#34d399" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="0" y="0" width="16" height="16" rx="2"/>
+    <circle cx="5" cy="5" r="1.4" fill="#34d399" stroke="none"/>
+    <path d="M1,13 L6,8 L9,11 L15,4"/>
+  </g>
+
+  <line x1="1390" y1="192" x2="1630" y2="192" stroke="#bbf7d0" stroke-width="1"/>
+  <rect x="1442" y="204" width="108" height="19" rx="9.5" fill="#dcfce7" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="1450" y="217" class="file-badge" fill="#047857">06_figures.R</text>
+
+  <g>
+    <circle cx="1408" cy="270" r="4" fill="#ffffff" stroke="#10b981" stroke-width="2.5"/>
+    <line x1="1408" y1="276" x2="1408" y2="375" stroke="#bbf7d0" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="1430" y="275" class="bullet-text">Composition + diversity</text>
+
+    <circle cx="1408" cy="381" r="4" fill="#ffffff" stroke="#10b981" stroke-width="2.5"/>
+    <line x1="1408" y1="387" x2="1408" y2="486" stroke="#bbf7d0" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="1430" y="386" class="bullet-text">Variance partitioning</text>
+
+    <circle cx="1408" cy="492" r="4" fill="#ffffff" stroke="#10b981" stroke-width="2.5"/>
+    <line x1="1408" y1="498" x2="1408" y2="590" stroke="#bbf7d0" stroke-width="1.5" stroke-dasharray="1 4" stroke-linecap="round"/>
+    <text x="1430" y="497" class="bullet-text">Seasonal deviations</text>
+
+    <circle cx="1408" cy="596" r="4" fill="#10b981"/>
+    <text x="1430" y="601" class="bullet-text">Host contrasts</text>
+  </g>
+
+  <!-- ============================================================ -->
+  <!-- FOOTER -->
+  <!-- ============================================================ -->
+  <line x1="50" y1="668" x2="1650" y2="668" stroke="#e2e8f0" stroke-width="1"/>
+  <g transform="translate(50,680)" stroke="#94a3b8" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="6" cy="6" r="6"/>
+    <path d="M6,3.5 v3.2 M6,8.3 v0.2"/>
+  </g>
+  <text x="68" y="688" class="footer-text">See METHODS.md for the full mapping between manuscript Methods sentences and code.</text>
 </svg>
