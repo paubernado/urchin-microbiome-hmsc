@@ -1,0 +1,103 @@
+# =========================================================
+# FIGURE — Phylogenetic signal (rho) posterior distributions
+#
+#
+# rho = 0: species responses to predictors are independent of
+# phylogeny. rho = 1: species responses are fully explained by
+# phylogenetic relatedness.
+#
+# Requires (loaded by R/06_figures.R):
+#   mpost_PA_with_phylogeny, mpost_abundance_with_phylogeny
+# =========================================================
+
+library(coda)
+library(dplyr)
+library(ggplot2)
+
+stopifnot(exists("mpost_PA_with_phylogeny"))
+stopifnot(exists("mpost_abundance_with_phylogeny"))
+
+# ---------------------------------------------------------
+# Extract rho posterior samples (pooled across chains)
+# ---------------------------------------------------------
+extract_rho <- function(mpost_obj, model_label) {
+  if (is.null(mpost_obj$Rho)) {
+    stop("No Rho element found in this mpost object — was phyloTree ",
+         "included when fitting this model?")
+  }
+  rho_samples <- as.numeric(as.matrix(mpost_obj$Rho))
+  tibble::tibble(Model = model_label, rho = rho_samples)
+}
+
+rho_pa    <- extract_rho(mpost_PA_with_phylogeny, "Presence/Absence")
+rho_abund <- extract_rho(mpost_abundance_with_phylogeny, "Conditional abundance")
+
+rho_df <- bind_rows(rho_pa, rho_abund) %>%
+  mutate(Model = factor(Model, levels = c("Presence/Absence", "Conditional abundance")))
+
+# ---------------------------------------------------------
+# Posterior summary per model
+# ---------------------------------------------------------
+rho_summary <- rho_df %>%
+  group_by(Model) %>%
+  summarise(
+    mean = mean(rho),
+    lo = quantile(rho, 0.025),
+    hi = quantile(rho, 0.975),
+    p_positive = mean(rho > 0),
+    .groups = "drop"
+  )
+
+cat("=== Phylogenetic signal (rho) posterior summary ===\n")
+print(rho_summary)
+
+# ---------------------------------------------------------
+# Colours consistent with the diverging red/blue palette used
+# elsewhere in the figure set (seasonal deviations heatmap,
+# host contrast panels)
+# ---------------------------------------------------------
+model_cols <- c("Presence/Absence" = "#B2182B", "Conditional abundance" = "#2166AC")
+
+# ---------------------------------------------------------
+# Plot: overlapping posterior densities, single panel.
+# No title/subtitle — full interpretation (means, credible
+# intervals, P(rho > 0)) goes in the figure caption instead.
+# ---------------------------------------------------------
+fig_rho <- ggplot(rho_df, aes(x = rho, fill = Model, colour = Model)) +
+  geom_area(stat = "density", alpha = 0.32, linewidth = 0, position = "identity") +
+  geom_density(linewidth = 1, fill = NA) +
+  geom_vline(xintercept = 0, linetype = 3, linewidth = 0.5, colour = "#94a3b8") +
+  geom_segment(
+    data = rho_summary,
+    aes(x = mean, xend = mean, y = 0, yend = Inf, colour = Model),
+    linewidth = 0.7, linetype = "22", show.legend = FALSE
+  ) +
+  scale_fill_manual(values = model_cols, name = NULL) +
+  scale_colour_manual(values = model_cols, name = NULL) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25), expand = c(0, 0)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.08))) +
+  labs(
+    x = expression("Phylogenetic signal (" * rho * ")"),
+    y = "Posterior density"
+  ) +
+  theme_classic(base_size = 12) +
+  theme(
+    axis.line = element_line(colour = "black", linewidth = 0.4),
+    axis.ticks = element_line(colour = "black", linewidth = 0.4),
+    axis.text = element_text(colour = "black", size = 10.5),
+    axis.title = element_text(size = 12),
+    legend.position = c(0.16, 0.90),
+    legend.background = element_rect(fill = "white", colour = NA),
+    legend.key = element_rect(fill = NA),
+    legend.text = element_text(size = 10.5),
+    plot.margin = margin(10, 16, 8, 8)
+  )
+
+print(fig_rho)
+
+dir.create("figures", showWarnings = FALSE)
+ggsave("figures/FIGURE_phylogenetic_signal.pdf", fig_rho, width = 7.5, height = 4.6, bg = "white")
+ggsave("figures/FIGURE_phylogenetic_signal.png", fig_rho, width = 7.5, height = 4.6, dpi = 500, bg = "white")
+
+cat("\nSaved figures/FIGURE_phylogenetic_signal.{pdf,png}\n")
+
