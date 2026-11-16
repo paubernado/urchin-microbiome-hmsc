@@ -1,18 +1,12 @@
 # Sea urchin coelomic fluid microbiome: QIIME2 + HMSC pipeline
 
-Bioinformatic and statistical pipeline for the **coelomic fluid microbiome** of the sea urchins *Arbacia lixula* and *Paracentrotus lividus* (with
-surrounding seawater samples as environmental controls), from raw amplicon
-reads to joint species distribution models (HMSC) and manuscript figures.
+Bioinformatic and statistical pipeline for the **coelomic fluid microbiome** of the sea urchins *Arbacia lixula* and *Paracentrotus lividus* (with surrounding seawater samples as environmental controls), from raw amplicon reads to joint species distribution models (HMSC) and manuscript figures.
 
 ## Pipeline overview
 
 [![Pipeline overview](https://github.com/paubernado/urchin-microbiome-hmsc/raw/main/docs/pipeline_overview.svg)](https://github.com/paubernado/urchin-microbiome-hmsc/blob/main/docs/pipeline_overview.svg)
 
-The diagram above shows the pipeline as reported in the manuscript (QIIME2
-→ R/phyloseq → HMSC models with phylogeny + matching null models →
-figures). The repository also includes a no-phylogeny variant of the HMSC
-models (`R/03_hmsc_models_no_phylogeny.R`), kept for reference only — it
-is **not** part of the manuscript. See [Repository structure](#repository-structure) and [`METHODS.md`](https://github.com/paubernado/urchin-microbiome-hmsc/blob/main/METHODS.md) for details.
+The diagram above shows the pipeline as reported in the manuscript (QIIME2 → R/phyloseq → joint hurdle HMSC model + matching null model → figures). The repository also includes separate presence–absence and conditional abundance models (`R/Separate_models/`), reported in the Supplementary Material. See [Repository structure](#repository-structure) and [`METHODS.md`](https://github.com/paubernado/urchin-microbiome-hmsc/blob/main/METHODS.md) for details.
 
 ## Repository structure
 
@@ -29,14 +23,14 @@ is **not** part of the manuscript. See [Repository structure](#repository-struct
 │   ├── 01_qiime2_asv_pipeline.sh     # raw reads → ASVs, taxonomy, tree, phyloseq export
 │   └── 02_qiime2_reexport_archaea.sh # re-export retaining Archaea for phylogenetic rooting
 ├── R/
-│   ├── Separate_models/              # presence–absence and conditional abundance (Supplementary)
-│   │   ├── 00_mcmc_config.R
-│   │   ├── 01_import_decontam.R
-│   │   ├── 02_genus_aggregation.R
+│   ├── Separate_models/              # presence–absence and conditional abundance models (Supplementary)
+│   │   ├── 00_mcmc_config.R          # single source of truth for all MCMC settings
+│   │   ├── 01_import_decontam.R      # import phyloseq, decontam, taxonomy cleanup, filtering
+│   │   ├── 02_genus_aggregation.R    # aggregate to genus, build Y (counts) and X (covariates)
 │   │   ├── 03_hmsc_models_no_phylogeny.R
 │   │   ├── 04_hmsc_models_with_phylogeny.R
-│   │   ├── 05_null_models.R
-│   │   ├── 06_figures.R
+│   │   ├── 05_null_models.R          # intercept-only null models
+│   │   ├── 06_figures.R              # master figure script
 │   │   ├── 07_alpha_diversity_models.R
 │   │   └── figures/
 │   │       ├── fig2_composition_diversity.R
@@ -52,18 +46,16 @@ is **not** part of the manuscript. See [Repository structure](#repository-struct
 ├── results/                          # .rds objects (not tracked in git)
 ├── figures/                          # .pdf / .png output
 └── data/
-    └── README.md
+    └── README.md                     # how to obtain metadata, raw reads, etc.
 ```
 
-Large intermediate files (`results/*.rds`, raw reads, reference databases) are
-not tracked in this repository. See `data/README.md` for how to regenerate
-or download them.
+Large intermediate files (`results/*.rds`, raw reads, reference databases) are not tracked in this repository. See `data/README.md` for how to regenerate or download them.
 
 ## Setup
 
 ### QIIME2 (bash pipeline)
 
-```
+```bash
 conda env create -f environment.yml
 conda activate qiime2-2022.11
 ```
@@ -72,120 +64,83 @@ conda activate qiime2-2022.11
 
 **Quick start** (installs latest versions, no version pinning):
 
-```
+```r
 source("install_dependencies.R")
 ```
 
-**Exact reproduction of the paper's package versions** (recommended once
-you have a working setup — this captures what you actually have installed):
+**Exact reproduction of the paper's package versions** (recommended):
 
-```
-install.packages("renv")
-renv::init()
-renv::snapshot()   # writes renv.lock; commit it so others can renv::restore()
-```
-
-If a `renv.lock` file already exists in the repo (generated this way by the
-authors), others can instead run:
-
-```
+```r
 install.packages("renv")
 renv::restore()   # installs the exact versions listed in renv.lock
 ```
 
-Key R packages: `phyloseq`, `decontam`, `microbiome`, `Hmsc`, `coda`, `picante`, `ape`, `ggplot2`, `patchwork`, `ggh4x`, `qiime2R`, `lme4`, `lmerTest`, `glmmTMB`, `car`, `emmeans`, `multcomp`, `multcompView` (see `install_dependencies.R` for the full list, including Bioconductor and
-GitHub-only packages).
+Key R packages: `phyloseq`, `decontam`, `microbiome`, `Hmsc`, `coda`, `picante`, `ape`, `ggplot2`, `patchwork`, `ggh4x`, `qiime2R`, `lme4`, `lmerTest`, `glmmTMB`, `car`, `emmeans`, `multcomp`, `multcompView`.
 
 ## Running the pipeline
 
-1. **QIIME2** (on a machine/cluster with the raw fastq files):
+1. **QIIME2** — raw reads → ASVs, taxonomy, tree:
 
-```
+```bash
 bash pipeline/01_qiime2_asv_pipeline.sh
+bash pipeline/02_qiime2_reexport_archaea.sh   # re-export retaining Archaea for rooting
 ```
 
-    Produces the `Phyloseq/` export folder (biom table, rooted/unrooted tree,
-taxonomy, representative sequences) described in `data/README.md`.
+2. **Joint hurdle model** (main analysis):
 
-2. **R / phyloseq + decontam + genus aggregation**:
+```bash
+# Prepare data (phylogenetic tree, Y matrix, covariates)
+Rscript R/Joint_model/HMSC_STEP0_prepare_data.R
 
-```
-source("R/01_import_decontam.R")
-source("R/02_genus_aggregation.R")
-```
+# Fit joint model + null model (8 chains × 150,000 iterations; runs on cluster)
+Rscript R/Joint_model/HMSC_STEP1_fit.R --model joint
 
-3. **HMSC models** (MCMC settings are centralized in `R/00_mcmc_config.R` — edit that single file if you need to change `samples` / `thin` / `transient` / `nChains` / `nParallel`):
-
-```
-source("R/03_hmsc_models_no_phylogeny.R")
-source("R/04_hmsc_models_with_phylogeny.R")
-source("R/05_null_models.R")
+# Cross-validation and model fit metrics
+bash R/Joint_model/run_cv_separate_models.sh
 ```
 
-4. **Alpha diversity models** (Shannon diversity, Pielou's evenness, Faith's PD; independent of the HMSC models above — only needs `results/phylo_raw.rds` from step 2):
+3. **Separate models** (Supplementary; see `R/Separate_models/`):
 
-```
-source("R/07_alpha_diversity_models.R")
+```r
+source("R/Separate_models/01_import_decontam.R")
+source("R/Separate_models/02_genus_aggregation.R")
+source("R/Separate_models/04_hmsc_models_with_phylogeny.R")
+source("R/Separate_models/05_null_models.R")
 ```
 
-    Writes `results/TableSXX_alpha_diversity_summary.csv` (descriptive
-statistics, fixed-effect significance, and pairwise host/season
-contrasts for all three metrics).
+4. **Alpha diversity models**:
+
+```r
+source("R/Separate_models/07_alpha_diversity_models.R")
+```
 
 5. **Figures**:
 
+```r
+source("R/Separate_models/06_figures.R")
 ```
-source("R/06_figures.R")
-```
 
-    This loads every object the figure scripts need directly from the `.rds` files saved in steps 3–4 (so figures can be regenerated without
-re-running MCMC), then produces, in order:
+## MCMC settings
 
-  - `figures/Figure2_composition_and_diversity.{pdf,png}`
-  - `figures/Figure3_alpha_diversity.{pdf,png}`
-  - `figures/FIGURE_VP_both_models.{pdf,png}`
-  - `figures/FIGURE_seasonal_deviations_FINAL.{pdf,png}`
-  - `figures/FIGURE_block4_ABUNDANCE.{pdf,png}` and `FIGURE_block4_PA.{pdf,png}`
-
-## Methods ↔ code mapping
-
-[`METHODS.md`](https://github.com/paubernado/urchin-microbiome-hmsc/blob/main/METHODS.md) links every sentence that will appear in the
-manuscript's Methods section to the exact parameter and line of code that
-produced it (trimming, DADA2 truncation lengths, classifier confidence,
-rarefaction depths, HMSC MCMC settings, alpha diversity model
-specification, etc.). Check it before editing either the manuscript text
-or the pipeline, so the two cannot silently drift apart.
-
-## MCMC settings (confirmed from fitted model objects)
-
-| Model                                  | samples | thin | transient | nChains |
-| --------------------------------------- | ------- | ---- | --------- | ------- |
-| Presence/absence (with phylogeny)      | 12000   | 50   | 4000      | 8       |
-| Conditional abundance (with phylogeny) | 10000   | 20   | 6000      | 8       |
-
-These values live in one place, `R/00_mcmc_config.R`, and are sourced by
-every fitting script (`03`, `04`, `05`) so the manuscript's Methods /
-Table SXX and the code cannot drift apart.
+| Model | chains | iterations/chain | transient | thin | posterior samples |
+|-------|--------|-----------------|-----------|------|-------------------|
+| Joint hurdle (main) | 8 | 150,000 | 50,000 | 400 | 2,000 |
+| Presence–absence (Supplementary) | 8 | 206,000 | 6,000 | 20 | 80,000 |
+| Conditional abundance (Supplementary) | 8 | 206,000 | 6,000 | 20 | 80,000 |
 
 ## Alpha diversity model specification
 
-| Metric            | Model                                              | Response scale |
-| ------------------ | --------------------------------------------------- | -------------- |
-| Shannon diversity  | Linear mixed model (`lme4`/`lmerTest`)              | Raw            |
-| Faith's PD         | Linear mixed model (`lme4`/`lmerTest`)              | log            |
-| Pielou's evenness  | Beta-regression mixed model (`glmmTMB`, logit link) | Raw (0–1)      |
+| Metric | Model | Response scale |
+|--------|-------|----------------|
+| Shannon diversity | Linear mixed model (`lme4`/`lmerTest`) | Raw |
+| Faith's PD | Linear mixed model (`lme4`/`lmerTest`) | log |
+| Pielou's evenness | Beta-regression mixed model (`glmmTMB`, logit link) | Raw (0–1) |
 
-All three: `metric ~ HostType * Season + (1 | Site)`, rarefied to 5,000
-reads/sample (seed = 123) before calculating diversity indices. Fixed-effect
-significance via Type II Wald chi-square tests (`car::Anova`); pairwise
-host/season contrasts via `emmeans`, Benjamini–Hochberg (FDR)-corrected.
-Defined in `R/07_alpha_diversity_models.R`.
+All three: `metric ~ HostType * Season + (1 | Site)`, rarefied to 5,000 reads/sample (seed = 123). Fixed-effect significance via Type II Wald chi-square tests (`car::Anova`); pairwise contrasts via `emmeans`, Benjamini–Hochberg corrected.
 
 ## Status
 
-This repository accompanies a manuscript currently in preparation. A
-citation (and DOI, once available as a preprint or published article) will
-be added here.
+This repository accompanies a manuscript currently in preparation. A citation (and DOI, once available) will be added here.
 
 ## License
 
