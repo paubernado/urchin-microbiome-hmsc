@@ -16,43 +16,44 @@ is **not** part of the manuscript. See [Repository structure](#repository-struct
 
 ## Repository structure
 
+```
 .
 ├── README.md
-├── METHODS.md                   # manuscript Methods ↔ code mapping (single source of truth)
-├── install_dependencies.R       # one-shot R package installer
-├── environment.yml              # QIIME2 conda environment
-├── renv.lock                    # R package versions (see Setup) — generate with renv::snapshot()
+├── METHODS.md                        # manuscript Methods ↔ code mapping
+├── install_dependencies.R            # one-shot R package installer
+├── environment.yml                   # QIIME2 conda environment
+├── renv.lock                         # R package versions
 ├── docs/
-│   └── pipeline_overview.svg    # diagram shown above
+│   └── pipeline_overview.svg
 ├── pipeline/
-│   ├── 01_qiime2_asv_pipeline.sh          # raw reads → ASVs, taxonomy, tree, phyloseq export
-│   └── 02_qiime2_reexport_archaea.sh      # re-export retaining Archaea for phylogenetic rooting
+│   ├── 01_qiime2_asv_pipeline.sh     # raw reads → ASVs, taxonomy, tree, phyloseq export
+│   └── 02_qiime2_reexport_archaea.sh # re-export retaining Archaea for phylogenetic rooting
 ├── R/
-│   ├── Separate_models/                   # presence–absence and conditional abundance models (Supplementary)
-│   │   ├── 00_mcmc_config.R               # single source of truth for all MCMC settings
-│   │   ├── 01_import_decontam.R           # import phyloseq, decontam, taxonomy cleanup, filtering
-│   │   ├── 02_genus_aggregation.R         # aggregate to genus, build Y (counts) and X (covariates incl. logDepth_z)
+│   ├── Separate_models/              # presence–absence and conditional abundance (Supplementary)
+│   │   ├── 00_mcmc_config.R
+│   │   ├── 01_import_decontam.R
+│   │   ├── 02_genus_aggregation.R
 │   │   ├── 03_hmsc_models_no_phylogeny.R
 │   │   ├── 04_hmsc_models_with_phylogeny.R
-│   │   ├── 05_null_models.R               # intercept-only null models + model-vs-null table
-│   │   ├── 06_figures.R                   # master script: loads results, sources figures/*.R
-│   │   ├── 07_alpha_diversity_models.R    # Shannon/evenness/Faith's PD: rarefaction (5000 reads,
-│   │   │                                  #   seed=123), LMMs + beta regression, emmeans contrasts
+│   │   ├── 05_null_models.R
+│   │   ├── 06_figures.R
+│   │   ├── 07_alpha_diversity_models.R
 │   │   └── figures/
 │   │       ├── fig2_composition_diversity.R
 │   │       ├── fig3_alpha_diversity.R
 │   │       ├── fig_variance_partitioning.R
 │   │       ├── fig_seasonal_deviations.R
 │   │       └── fig_host_contrasts.R
-│   └── Joint_model/                       # joint hurdle model (main analysis)
-│       ├── HMSC_STEP0_prepare_data.R      # phylogenetic tree, Y matrix, covariates
-│       ├── HMSC_STEP1_fit.R               # fit joint + null models (8 chains × 150,000 iter)
-│       ├── HMSC_STEP2_cv_results.R        # CV, predictions, model fit metrics
-│       └── run_cv_separate_models.sh      # launcher script (nice 19, 8 cores)
-├── results/                     # .rds objects saved by scripts (not tracked in git; see below)
-├── figures/                     # .pdf / .png output
+│   └── Joint_model/                  # joint hurdle model (main analysis)
+│       ├── HMSC_STEP0_prepare_data.R # phylogenetic tree, Y matrix, covariates
+│       ├── HMSC_STEP1_fit.R          # fit joint + null models (8 chains × 150,000 iter)
+│       ├── HMSC_STEP2_cv_results.R   # CV, predictions, model fit metrics
+│       └── run_cv_separate_models.sh # launcher script (nice 19, 8 cores)
+├── results/                          # .rds objects (not tracked in git)
+├── figures/                          # .pdf / .png output
 └── data/
-    └── README.md                # how to obtain metadata_pbr2.tsv, raw reads, etc.
+    └── README.md
+```
 
 Large intermediate files (`results/*.rds`, raw reads, reference databases) are
 not tracked in this repository. See `data/README.md` for how to regenerate
