@@ -16,7 +16,6 @@ is **not** part of the manuscript. See [Repository structure](#repository-struct
 
 ## Repository structure
 
-```
 .
 ├── README.md
 ├── METHODS.md                   # manuscript Methods ↔ code mapping (single source of truth)
@@ -26,33 +25,34 @@ is **not** part of the manuscript. See [Repository structure](#repository-struct
 ├── docs/
 │   └── pipeline_overview.svg    # diagram shown above
 ├── pipeline/
-│   └── 01_qiime2_asv_pipeline.sh    # raw reads -> ASVs, taxonomy, tree, phyloseq export
+│   ├── 01_qiime2_asv_pipeline.sh          # raw reads → ASVs, taxonomy, tree, phyloseq export
+│   └── 02_qiime2_reexport_archaea.sh      # re-export retaining Archaea for phylogenetic rooting
 ├── R/
-│   ├── 00_mcmc_config.R             # single source of truth for all MCMC settings
-│   ├── 01_import_decontam.R         # import phyloseq, decontam, taxonomy cleanup, filtering
-│   ├── 02_genus_aggregation.R       # aggregate to genus, build Y (counts) and X (covariates incl. logDepth_z)
-│   ├── 03_hmsc_models_no_phylogeny.R
-│   ├── 04_hmsc_models_with_phylogeny.R
-│   ├── 05_null_models.R             # intercept-only null models + model-vs-null table
-│   ├── 06_figures.R                 # master script: loads results, sources figures/*.R
-│   ├── 07_alpha_diversity_models.R  # Shannon/evenness/Faith's PD: rarefaction (5000 reads,
-│   │                                 #   seed=123), LMMs (Shannon, log-Faith's PD) + beta
-│   │                                 #   regression (evenness) with Site as random intercept,
-│   │                                 #   Type II Wald tests, emmeans pairwise contrasts;
-│   │                                 #   writes Table SXX (alpha diversity summary)
-│   └── figures/
-│       ├── fig2_composition_diversity.R
-│       ├── fig3_alpha_diversity.R   # boxplot + significance brackets (host contrast) and
-│       │                             #   seasonal reaction-norm panels, reusing the models
-│       │                             #   fitted in R/07_alpha_diversity_models.R
-│       ├── fig_variance_partitioning.R
-│       ├── fig_seasonal_deviations.R
-│       └── fig_host_contrasts.R
-├── results/                     # .rds objects saved by R/01-05, 07 (not tracked in git; see below)
-├── figures/                     # .pdf / .png output of R/06_figures.R
+│   ├── Separate_models/                   # presence–absence and conditional abundance models (Supplementary)
+│   │   ├── 00_mcmc_config.R               # single source of truth for all MCMC settings
+│   │   ├── 01_import_decontam.R           # import phyloseq, decontam, taxonomy cleanup, filtering
+│   │   ├── 02_genus_aggregation.R         # aggregate to genus, build Y (counts) and X (covariates incl. logDepth_z)
+│   │   ├── 03_hmsc_models_no_phylogeny.R
+│   │   ├── 04_hmsc_models_with_phylogeny.R
+│   │   ├── 05_null_models.R               # intercept-only null models + model-vs-null table
+│   │   ├── 06_figures.R                   # master script: loads results, sources figures/*.R
+│   │   ├── 07_alpha_diversity_models.R    # Shannon/evenness/Faith's PD: rarefaction (5000 reads,
+│   │   │                                  #   seed=123), LMMs + beta regression, emmeans contrasts
+│   │   └── figures/
+│   │       ├── fig2_composition_diversity.R
+│   │       ├── fig3_alpha_diversity.R
+│   │       ├── fig_variance_partitioning.R
+│   │       ├── fig_seasonal_deviations.R
+│   │       └── fig_host_contrasts.R
+│   └── Joint_model/                       # joint hurdle model (main analysis)
+│       ├── HMSC_STEP0_prepare_data.R      # phylogenetic tree, Y matrix, covariates
+│       ├── HMSC_STEP1_fit.R               # fit joint + null models (8 chains × 150,000 iter)
+│       ├── HMSC_STEP2_cv_results.R        # CV, predictions, model fit metrics
+│       └── run_cv_separate_models.sh      # launcher script (nice 19, 8 cores)
+├── results/                     # .rds objects saved by scripts (not tracked in git; see below)
+├── figures/                     # .pdf / .png output
 └── data/
-    └── README.md                 # how to obtain metadata_pbr2.tsv, raw reads, etc.
-```
+    └── README.md                # how to obtain metadata_pbr2.tsv, raw reads, etc.
 
 Large intermediate files (`results/*.rds`, raw reads, reference databases) are
 not tracked in this repository. See `data/README.md` for how to regenerate
