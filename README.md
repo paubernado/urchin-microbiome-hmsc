@@ -24,17 +24,14 @@ The diagram above shows the pipeline as reported in the manuscript (QIIME2 → R
 │   └── 02_qiime2_reexport_archaea.sh # re-export retaining Archaea for phylogenetic rooting
 ├── R/
 │   ├── Separate_models/              # presence–absence and conditional abundance models (Supplementary)
-│   │   ├── 00_mcmc_config.R          # single source of truth for all MCMC settings
-│   │   ├── 01_import_decontam.R      # import phyloseq, decontam, taxonomy cleanup, filtering
-│   │   ├── 02_genus_aggregation.R    # aggregate to genus, build Y (counts) and X (covariates)
+│   │   ├── 00_mcmc_config.R
+│   │   ├── 01_import_decontam.R
+│   │   ├── 02_genus_aggregation.R
 │   │   ├── 03_hmsc_models_no_phylogeny.R
 │   │   ├── 04_hmsc_models_with_phylogeny.R
-│   │   ├── 05_null_models.R          # intercept-only null models
-│   │   ├── 06_figures.R              # master figure script
-│   │   ├── 07_alpha_diversity_models.R
+│   │   ├── 05_null_models.R
 │   │   └── figures/
 │   │       ├── fig2_composition_diversity.R
-│   │       ├── fig3_alpha_diversity.R
 │   │       ├── fig_variance_partitioning.R
 │   │       ├── fig_seasonal_deviations.R
 │   │       └── fig_host_contrasts.R
@@ -62,20 +59,18 @@ conda activate qiime2-2022.11
 
 ### R (statistical pipeline)
 
-**Quick start** (installs latest versions, no version pinning):
+**Quick start:**
 
 ```r
 source("install_dependencies.R")
 ```
 
-**Exact reproduction of the paper's package versions** (recommended):
+**Exact reproduction of paper package versions:**
 
 ```r
 install.packages("renv")
-renv::restore()   # installs the exact versions listed in renv.lock
+renv::restore()
 ```
-
-Key R packages: `phyloseq`, `decontam`, `microbiome`, `Hmsc`, `coda`, `picante`, `ape`, `ggplot2`, `patchwork`, `ggh4x`, `qiime2R`, `lme4`, `lmerTest`, `glmmTMB`, `car`, `emmeans`, `multcomp`, `multcompView`.
 
 ## Running the pipeline
 
@@ -83,41 +78,24 @@ Key R packages: `phyloseq`, `decontam`, `microbiome`, `Hmsc`, `coda`, `picante`,
 
 ```bash
 bash pipeline/01_qiime2_asv_pipeline.sh
-bash pipeline/02_qiime2_reexport_archaea.sh   # re-export retaining Archaea for rooting
+bash pipeline/02_qiime2_reexport_archaea.sh
 ```
 
 2. **Joint hurdle model** (main analysis):
 
 ```bash
-# Prepare data (phylogenetic tree, Y matrix, covariates)
 Rscript R/Joint_model/HMSC_STEP0_prepare_data.R
-
-# Fit joint model + null model (8 chains × 150,000 iterations; runs on cluster)
 Rscript R/Joint_model/HMSC_STEP1_fit.R --model joint
-
-# Cross-validation and model fit metrics
 bash R/Joint_model/run_cv_separate_models.sh
 ```
 
-3. **Separate models** (Supplementary; see `R/Separate_models/`):
+3. **Separate models** (Supplementary):
 
 ```r
 source("R/Separate_models/01_import_decontam.R")
 source("R/Separate_models/02_genus_aggregation.R")
 source("R/Separate_models/04_hmsc_models_with_phylogeny.R")
 source("R/Separate_models/05_null_models.R")
-```
-
-4. **Alpha diversity models**:
-
-```r
-source("R/Separate_models/07_alpha_diversity_models.R")
-```
-
-5. **Figures**:
-
-```r
-source("R/Separate_models/06_figures.R")
 ```
 
 ## MCMC settings
@@ -128,19 +106,13 @@ source("R/Separate_models/06_figures.R")
 | Presence–absence (Supplementary) | 8 | 206,000 | 6,000 | 20 | 80,000 |
 | Conditional abundance (Supplementary) | 8 | 206,000 | 6,000 | 20 | 80,000 |
 
-## Alpha diversity model specification
-
-| Metric | Model | Response scale |
-|--------|-------|----------------|
-| Shannon diversity | Linear mixed model (`lme4`/`lmerTest`) | Raw |
-| Faith's PD | Linear mixed model (`lme4`/`lmerTest`) | log |
-| Pielou's evenness | Beta-regression mixed model (`glmmTMB`, logit link) | Raw (0–1) |
-
-All three: `metric ~ HostType * Season + (1 | Site)`, rarefied to 5,000 reads/sample (seed = 123). Fixed-effect significance via Type II Wald chi-square tests (`car::Anova`); pairwise contrasts via `emmeans`, Benjamini–Hochberg corrected.
-
 ## Status
 
 This repository accompanies a manuscript currently in preparation. A citation (and DOI, once available) will be added here.
+
+## License
+
+This project is licensed under the MIT License — see LICENSE for details.
 
 ## License
 
